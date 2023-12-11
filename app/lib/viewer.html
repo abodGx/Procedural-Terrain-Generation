@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            font-family: "Segoe UI", serif;
+            font-size: 1.1rem;
+            text-shadow: rgba(0, 0, 0, 0.2) 0 0 2px !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            background-color: #404040;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+        }
+
+        h2 {
+            font-size: 3rem;
+        }
+
+        h3 {
+            font-size: 2.5rem;
+        }
+
+        h4 {
+            font-size: 2rem;
+        }
+
+        h5 {
+            font-size: 1.5rem;
+        }
+
+        h6 {
+            font-size: 1.25rem;
+        }
+
+        .container {
+            visibility: hidden;
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            top: 0;
+        }
+
+        .loading-container {
+            background: #1010;
+            user-select: none;
+            color: white;
+            appearance: none;
+            -webkit-appearance: none;
+            outline: none;
+            border: none;
+            align-items: center;
+            justify-content: end;
+            padding-bottom: 40vh;
+            box-sizing: border-box;
+            z-index: 30;
+        }
+
+        .loading-counter::after {
+            content: " out of " attr(total-count);
+            white-space: pre-wrap;
+        }
+
+        .loading-counter::before {
+            content: "chunk ";
+            white-space: pre-wrap;
+        }
+
+        .dots {
+            width: 3rem;
+            aspect-ratio: 4;
+            background: radial-gradient(circle closest-side, #FFF 85%, transparent) 0 / 1rem 100% space;
+            clip-path: inset(0 100% 0 0);
+            animation: d1 1s steps(4) infinite;
+        }
+
+        @keyframes d1 {
+            to {
+                clip-path: inset(0 -1rem 0 0);
+            }
+        }
+
+        .settings-container {
+            row-gap: 0.25rem;
+            user-select: none;
+            white-space: break-spaces;
+            background: rgba(0, 0, 0, 0.65);
+            color: whitesmoke;
+            padding-top: 3rem;
+            padding-bottom: 4rem;
+            box-sizing: border-box;
+            align-items: center;
+            height: fit-content !important;
+            min-height: 100%;
+            z-index: 30;
+        }
+
+        .settings-section {
+            display: flex;
+            flex-direction: column;
+            row-gap: 0.25rem;
+            width: 100%;
+            align-items: center;
+        }
+
+        .settings-section-header {
+            display: inline-flex;
+            padding: 0.75rem 0;
+            width: 65%;
+        }
+
+        .settings-field-container {
+            display: flex;
+            flex-direction: row;
+            background: rgb(200, 200, 200, 0.25);
+            align-items: center;
+            padding: 0.2rem 0 0.2rem 3rem;
+            border-radius: 0.2rem;
+            width: 50%;
+            justify-content: space-between;
+        }
+
+        .settings-field-sub-container {
+            display: inline-flex;
+            flex-direction: row;
+            gap: 0.75rem;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .settings-field-label {
+            font-family: "Segoe UI Semibold", serif;
+            pointer-events: none;
+        }
+
+        .settings-field-sub-label {
+            font-family: "Segoe UI Semibold", serif;
+            min-width: 4rem;
+        }
+
+        .console-container {
+            z-index: 20;
+        }
+
+        .console-feedback-container {
+            display: flex;
+            flex-direction: column;
+            row-gap: 0.5rem;
+            width: 100%;
+            flex-grow: 1;
+            white-space: break-spaces;
+            background: rgba(0, 0, 0, 0.7);
+            padding-top: 0.5rem;
+            padding-bottom: 4rem;
+        }
+
+        .console-feedback {
+            display: flex;
+            white-space: normal;
+            word-wrap: break-word;
+            height: fit-content;
+            padding-right: 1rem;
+            overflow-wrap: anywhere;
+        }
+
+        .console-feedback::before {
+            content: ">";
+            padding-right: 0.25rem;
+            padding-left: 0.5rem;
+        }
+
+        .console-input-container {
+            display: flex;
+            position: fixed;
+            width: calc(100% - 2rem);
+            background: white;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            bottom: 0;
+        }
+
+        .console-input-label {
+            display: inline-flex;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .console-input {
+            appearance: none;
+            outline: none;
+            border: none;
+            background: inherit;
+            display: inline-flex;
+            flex-grow: 1;
+            height: 3rem;
+        }
+
+        .console-input:focus {
+            appearance: none;
+            outline: none;
+            border: none;
+        }
+
+        .console-slash {
+            display: inline-flex;
+            align-items: center;
+            font-size: 1.5rem;
+            width: fit-content;
+            user-select: none;
+            margin-right: 0.15rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .position-label {
+            text-shadow: none !important;
+            font-family: "Segoe UI Semibold", serif;
+            font-size: 1rem;
+            display: inline-block;
+            height: min-content;
+        }
+
+        .position-container {
+            visibility: hidden;
+            background: rgb(0, 0, 0, 0.2);
+            display: flex;
+            position: fixed;
+            flex-direction: column;
+            user-select: none;
+            height: min-content;
+            top: 10vh;
+            min-width: 4.5rem;
+            padding: 0.15rem 0.5rem 0.3rem 0.5rem;
+            margin-left: 0.75rem;
+            border-radius: 0.15rem;
+            z-index: 10;
+        }
+
+        .coordinate-holder::before {
+            font-size: 1.15rem !important;
+            content: attr(coordinate) ": ";
+            white-space: pre-wrap !important;
+        }
+
+        .biome-holder {
+            text-shadow: 1px 1px 1px rgb(0, 0, 0, 0.25) !important;
+            padding-top: 0.2rem;
+            color: indianred;
+        }
+
+        input[type=range] {
+            background: inherit;
+            height: 38px;
+            appearance: none;
+            -webkit-appearance: none;
+            width: 100%;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            animate: 0.2s;
+            background: rgb(255, 255, 255, 0.75);
+            border-radius: 1px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            box-shadow: 1px 1px 2px rgb(0, 0, 0, 0.7);
+            border: 1px solid rgb(0, 0, 0, 0.5);
+            height: 20px;
+            width: 10px;
+            border-radius: 2px;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            margin-top: -8px;
+        }
+
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            animate: 0.2s;
+            background: rgb(255, 255, 255, 0.75);
+            border-radius: 1px;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            box-shadow: 1px 1px 2px rgb(0, 0, 0, 0.7);
+            border: 1px solid rgb(0, 0, 0, 0.5);
+            height: 24px;
+            width: 12px;
+            border-radius: 2px;
+            background: white;
+            cursor: pointer;
+        }
+    </style>
+
+    <script src="base/event-delegation.js"></script>
+    <script src="terrain/biomes.js"></script>
+    <script src="events/event-listener.js"></script>
+    <script src="entity/transformable.js"></script>
+    <script src="entity/body.js"></script>
+    <script src="entity/model.js"></script>
+    <script src="terrain/terrain.js"></script>
+    <script src="base/worker.js"></script>
+    <script src="base/camera.js"></script>
+
+
+    <title></title>
+    <script>
+
+        const consoleHintType = {
+            INFO: "springgreen",
+            ECHO: "white",
+            RESPONSE: "lightgray"
+        }
+
+        window.addEventListener("load", function () {
+            const canvas = document.getElementById("glcanvas"), width = window.innerWidth, height = window.innerHeight;
+            canvas.style.width = width + "px";
+            canvas.style.height = height + "px";
+            canvas.width = width;
+            canvas.height = height;
+
+            const worker = new EventDelegatingWorker("base/worker.js");
+            worker.addEventTarget(canvas, "canvas");
+
+            const feedbackNode = document.createElement("span"),
+                xCoord = document.getElementById("x-coordinate"),
+                yCoord = document.getElementById("y-coordinate"),
+                zCoord = document.getElementById("z-coordinate"),
+                biomeHolder = document.getElementById("biome-holder"),
+                coordinatesContainer = document.querySelector(".position-container"),
+                consoleInput = document.querySelector(".console-input"),
+                loadingContainer = document.querySelector(".loading-container"),
+                consoleContainer = document.querySelector(".console-container"),
+                settingsContainer = document.querySelector(".settings-container"),
+                consoleFeedbackContainer = document.querySelector(".console-feedback-container");
+            feedbackNode.classList.add("console-feedback");
+
+            let node, command, data;
+
+            const consoleHint = (str, type = consoleHintType.ECHO) => {
+                node = feedbackNode.cloneNode(true);
+                node.style.color = type;
+                node.textContent = str;
+                consoleFeedbackContainer.appendChild(node);
+
+            };
+
+            consoleHint("Press Shift + Q again to hide the console.", consoleHintType.INFO);
+            consoleHint(`Available biomes:${Biomes.biomes.map(value => ` "${value.name}"`)}.`, consoleHintType.INFO);
+
+            consoleInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    if (!consoleInput.value || (command = consoleInput.value.trim()) === "") return;
+                    worker.postMessage({"messageType": MessageType.COMMAND, command});
+                    consoleHint(command);
+                    consoleInput.value = "";
+                }
+            });
+
+            const loadingCounter = document.querySelector(".loading-counter");
+            loadingCounter.setAttribute("total-count", 4 * Terrain.worldSize * Terrain.worldSize + "");
+
+            // noinspection JSCheckFunctionSignatures
+            worker.onmessage = (message) => {
+                data = message.data;
+                switch (data.messageType) {
+                    case MessageType.INIT:
+                        loadingContainer.style.visibility = "visible";
+                        break;
+                    case MessageType.INIT_END:
+                        const worldSizeInput = document.querySelector("#world-size-input"),
+                            chunkSizeInput = document.querySelector("#chunk-size-input"),
+                            lodInput = document.querySelector("#lod-input"),
+                            rotationRateInput = document.querySelector("#rotation-rate-input"),
+                            panRateInput = document.querySelector("#pan-rate-input"),
+                            zoomRateInput = document.querySelector("#zoom-rate-input");
+
+                        worldSizeInput.value = Terrain.worldSize;
+                        chunkSizeInput.value = Terrain.chunkSize;
+                        lodInput.value = Terrain.lod;
+                        rotationRateInput.value = CameraController.rotationRate;
+                        panRateInput.value = CameraController.panRate;
+                        zoomRateInput.value = CameraController.zoomRate;
+
+                        for (const fieldContainer of document.getElementsByClassName("settings-field-container")) {
+                            const output = fieldContainer.querySelector("output"),
+                                range = fieldContainer.querySelector("input[type=range]");
+                            range.addEventListener("input", ev => {
+                                worker.postMessage({
+                                    messageType: MessageType.SETTINGS_UPDATE,
+                                    id: ev.target.id,
+                                    value: ev.target.value,
+                                });
+                                return output.textContent = ev.target.value;
+                            });
+                            // range.dispatchEvent(new Event("input"));
+                        }
+                        coordinatesContainer.style.visibility = "visible";
+                        loadingContainer.style.visibility = "hidden";
+                        break;
+                    case MessageType.TERRAIN_INIT:
+                        loadingCounter.textContent = data.i;
+                        break;
+                    case MessageType.COMMAND_ECHO:
+                        consoleHint(data.message, consoleHintType.RESPONSE);
+                        break;
+                    case MessageType.COORDINATION_UPDATE:
+                        xCoord.textContent = Math.round(data.pos.x / data.unit) + "";
+                        yCoord.textContent = Math.round(-data.pos.z / data.unit) + "";
+                        zCoord.textContent = Math.round(data.pos.y / data.unit) + "";
+                        biomeHolder.textContent = data.biome;
+                        break;
+                }
+            }
+
+            let isConsoleVisible = window.getComputedStyle(consoleContainer).visibility === "visible";
+            document.addEventListener("keydown", function (ev) {
+                const key = ev.key.toLocaleLowerCase();
+                if (ev.shiftKey && key === "q") {
+                    if (isConsoleVisible) {
+                        consoleContainer.style.visibility = "hidden";
+                        consoleInput.blur();
+                    } else {
+                        consoleContainer.style.visibility = "visible";
+                        setTimeout(() => consoleInput.focus(), 50);
+                    }
+                    isConsoleVisible = !isConsoleVisible;
+                }
+                if (key === "escape") {
+                    settingsContainer.style.visibility = "visible";
+                    settingsContainer.focus();
+                }
+            });
+
+            loadingContainer.addEventListener("keydown", ev => ev.stopImmediatePropagation());
+
+            consoleContainer.addEventListener("keydown", function (ev) {
+                const key = ev.key.toLocaleLowerCase();
+                if (key === "escape") {
+                    consoleContainer.style.visibility = "hidden";
+                    isConsoleVisible = !isConsoleVisible;
+                    ev.stopPropagation();
+                }
+            });
+
+            settingsContainer.addEventListener("keydown", function (ev) {
+                const key = ev.key.toLocaleLowerCase();
+                if (key === "escape") {
+                    settingsContainer.style.visibility = "hidden";
+                }
+                ev.stopPropagation();
+            });
+
+            const offscreenCanvas = canvas.transferControlToOffscreen();
+            worker.postMessage({
+                "messageType": MessageType.INIT,
+                offscreenCanvas,
+                boundingBox: canvas.getBoundingClientRect(),
+                width: width,
+                height: height
+            }, [offscreenCanvas]);
+
+        });
+    </script>
+</head>
+<body>
+<div>
+    <div style="display: flex; flex-direction: column;">
+        <div>
+            <div class="position-container">
+                <span coordinate="y" id="y-coordinate" class="position-label coordinate-holder"></span>
+                <span coordinate="x" id="x-coordinate" class="position-label coordinate-holder"></span>
+                <span coordinate="z" id="z-coordinate" class="position-label coordinate-holder"></span>
+                <span id="biome-holder" class="position-label biome-holder"></span>
+            </div>
+            <div>
+                <canvas style="position: fixed;" id="glcanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="container console-container" tabindex="-1">
+            <div class="console-feedback-container"></div>
+            <div class="console-input-container">
+                <span class="console-slash">/</span>
+                <label class="console-input-label">
+                    <input class="console-input" type="text">
+                </label>
+            </div>
+        </div>
+
+        <div class="container settings-container" tabindex="-1">
+            <h1 style="padding-bottom: 1rem;">Settings</h1>
+            <div class="settings-section">
+                <h6 class="settings-section-header">World Generation</h6>
+                <div class="settings-field-container">
+                    <label for="world-size-input" class="settings-field-label">World Size</label>
+                    <div class="settings-field-sub-container">
+                        <input id="world-size-input" type="range" step="1" min="1" max="64">
+                        <output class="settings-field-sub-label"></output>
+                    </div>
+                </div>
+                <div class="settings-field-container">
+                    <label for="chunk-size-input" class="settings-field-label">Chunk Size</label>
+                    <div class="settings-field-sub-container">
+                        <input id="chunk-size-input" type="range" step="1" min="1" max="1024">
+                        <output class="settings-field-sub-label"></output>
+                    </div>
+                </div>
+                <div class="settings-field-container">
+                    <label for="lod-input" class="settings-field-label">Level of Detail (LOD)</label>
+                    <div class="settings-field-sub-container">
+                        <input id="lod-input" type="range" step="1" min="1" max="32">
+                        <output class="settings-field-sub-label"></output>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h6 class="settings-section-header">Camera</h6>
+                <div class="settings-field-container">
+                    <label for="rotation-rate-input" class="settings-field-label">Rotation Rate</label>
+                    <div class="settings-field-sub-container">
+                        <input id="rotation-rate-input" type="range" step="1" min="1" max="500">
+                        <output class="settings-field-sub-label"></output>
+                    </div>
+                </div>
+                <div class="settings-field-container">
+                    <label for="pan-rate-input" class="settings-field-label">Pan Rate</label>
+                    <div class="settings-field-sub-container">
+                        <input id="pan-rate-input" type="range" step="1" min="1" max="5000">
+                        <output class="settings-field-sub-label"></output>
+                    </div>
+                </div>
+                <div class="settings-field-container">
+                    <label for="zoom-rate-input" class="settings-field-label">Zoom Rate</label>
+                    <div class="settings-field-sub-container">
+                        <input id="zoom-rate-input" type="range" step="1" min="1" max="100">
+                        <output class="settings-field-sub-label"></output>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container loading-container" tabindex="-1">
+            <div style="display: flex; gap: 0.25rem; padding-bottom: 3rem;">
+                <h2>Loading</h2>
+                <span style="align-self: end; padding-bottom: 1rem" class="dots"></span>
+            </div>
+            <h5 class="loading-counter"></h5>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
